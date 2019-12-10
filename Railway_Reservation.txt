@@ -1,0 +1,446 @@
+import java.util.*;
+import java.util.regex.*;
+
+class User {
+    private String username, email, password;
+    private long phonenumber;
+    private LinkedList<LinkedList<String>> tickets = new LinkedList<>();
+
+    public User(String username, String email, String password, long phonenumber) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.phonenumber = phonenumber;
+    }
+
+    public String getUserName() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public long getPhoneNumber() {
+        return phonenumber;
+    }
+
+    public void setTickets(LinkedList<String> temp) {
+        tickets.add(temp);
+    }
+
+    public void deleteTickets(String id) {
+        if (!tickets.isEmpty()) {
+            int count = 0;
+            ListIterator<LinkedList<String>> itr = tickets.listIterator();
+            int flag = 0;
+            while (itr.hasNext()) {
+                LinkedList<String> temp = (LinkedList<String>) itr.next();
+                if (temp.getFirst().equals(id)) {
+                    flag = 1;
+                    int size = temp.size();
+                    size -= 6;
+                    int day = Integer.parseInt(temp.get(5));
+                    if ("Chennai".equals(temp.get(1))) {
+                        int setvalue = Tickets.chennai.get(day);
+                        setvalue = size + setvalue;
+                        Tickets.chennai.set(day, setvalue);
+                    } else if ("Delhi".equals(temp.get(1))) {
+                        int setvalue = Tickets.howrah.get(day);
+                        setvalue = size + setvalue;
+                        Tickets.howrah.set(day, setvalue);
+                    } else if ("Hyderabad".equals(temp.get(1))) {
+                        int setvalue = Tickets.mathali.get(day);
+                        setvalue = size + setvalue;
+                        Tickets.mathali.set(day, setvalue);
+                    } else if ("Coimbatore".equals(temp.get(1))) {
+                        int setvalue = Tickets.manavadi.get(day);
+                        setvalue = size + setvalue;
+                        Tickets.manavadi.set(day, setvalue);
+                    }
+                    tickets.remove(count);
+                    System.out.println("Your Tickets has Deleted");
+                    break;
+                }
+                count++;
+            }
+            if (flag == 0) {
+                System.out.println("Please Provide valid id");
+                System.out.println("=============================");
+            }
+        } else {
+            System.out.println("Sorry No Tickets Available");
+            System.out.println("==============================");
+        }
+    }
+
+    public void displayTickets() {
+        if (!tickets.isEmpty()) {
+            try {
+                ListIterator<LinkedList<String>> itr = tickets.listIterator();
+                while (itr.hasNext()) {
+                    LinkedList<String> temp = (LinkedList<String>) itr.next();
+                    System.out.println("Ticket Id: " + temp.getFirst());
+                    System.out.println("Train Day: " + temp.get(4));
+                    System.out.println("Arrival Station: " + temp.get(1));
+                    System.out.println("Destination Station: " + temp.get(2));
+                    int size = temp.size();
+                    size = size - 6;
+                    System.out.println("Train Name: " + temp.get(3));
+                    System.out.println("Total Members For this Tickets: " + size);
+                    System.out.println("Travellers:");
+                    for (int i = temp.size() - 1; i > 5; i--) {
+                        System.out.println(temp.get(i));
+                    }
+                    System.out.println("==================================================================");
+                    System.out.println();
+                }
+            } catch (NoSuchElementException n) {
+                System.out.println("No Tickets Found");
+                System.out.println("==================================================================");
+                System.out.println();
+            }
+        } else {
+            System.out.println("No Tickets Available");
+            System.out.println("====================================");
+        }
+    }
+}
+
+public class Railway_Reservation {
+    Process process = new Process();
+
+    public static void main(String[] args) {
+        boolean istrue = true;
+        Railway_Reservation reservationApplication = new Railway_Reservation();
+        reservationApplication.startApplication(istrue);
+    }
+
+    public void startApplication(boolean istrue) {
+        Scanner reader = new Scanner(System.in);
+        if (istrue) {
+            try {
+                System.out.println("Registration...click 1");
+                System.out.println("Login...click 2");
+                System.out.println("Exit...click 3");
+
+                int choice = reader.nextInt();
+                switch (choice) {
+                case 1:
+                    System.out.println("==================================================================");
+                    System.out.println("Enter UserName:");
+                    String username = reader.next();
+                    System.out.println("Enter Password");
+                    String password = reader.next();
+                    System.out.println("Re-Enter Password");
+                    String repassword = reader.next();
+                    System.out.println("Enter Email-Id");
+                    String email = reader.next();
+                    System.out.println("Enter Phone Number");
+                    Long phonenumber = reader.nextLong();
+                    process.addUser(username, password, repassword, email, phonenumber);
+                    break;
+                case 2:
+                    System.out.println("==================================================================");
+                    System.out.println("Enter Username");
+                    String usernamelogin = reader.next();
+                    System.out.println("Enter Password");
+                    String passwordlogin = reader.next();
+                    process.login(usernamelogin, passwordlogin);
+                    break;
+                case 3:
+                    istrue = false;
+                    break;
+                default:
+                    System.out.println("Not a Valid Option");
+                }
+
+            } catch (InputMismatchException i) {
+                System.out.println("Please Enter a valid Input");
+            } catch (NullPointerException ni) {
+                System.out.println("Please Enter The Input");
+            } finally {
+                startApplication(istrue);
+            }
+            reader.close();
+        }
+
+    }
+}
+
+class Process {
+
+    Map<String, User> user = new LinkedHashMap<>();
+    Tickets ticket = new Tickets();
+
+    public void addUser(String username, String password, String repassword, String email, long phonenumber)
+            throws InputMismatchException, NullPointerException {
+        if (!checkUsername(username) && (checkPassword(password, repassword) == 0) && checkEmail(email)) {
+            user.put(username, new User(username, email, password, phonenumber));
+            System.out.println("User Added");
+            System.out.println("==================================================================");
+        } else {
+            System.out.println("Sorry Something Went Wrong Please Check the Inputs You Entered");
+            System.out.println(
+                    "May be this will cause by Username already Exist or Invalid email id or Invalid passowrd");
+        }
+    }
+
+    public void login(String username, String password) {
+        if (user.containsKey(username)) {
+            User temp = user.get(username);
+            if (temp.getPassword().compareTo(password) == 0) {
+                System.out.println("You Logged In!!");
+                System.out.println("==================================================================");
+                ticket.printOption(username, temp);
+            } else {
+                System.out.println("Invalid Password");
+            }
+
+        } else {
+            System.out.println("Invalid Username");
+        }
+    }
+
+    public int checkPassword(String password, String repassword) {
+        return password.compareTo(repassword);
+    }
+
+    public boolean checkEmail(String email) {
+        return Pattern.matches("[a-zA-Z0-9\\W]+@[a-zA-z]+.[a-z]{3}", email);
+    }
+
+    public boolean checkUsername(String username) {
+        return user.containsKey(username);
+    }
+}
+
+class Tickets {
+    static ArrayList<Integer> chennai = new ArrayList<>(7);
+    static ArrayList<Integer> howrah = new ArrayList<>(7);
+    static ArrayList<Integer> mathali = new ArrayList<>(7);
+    static ArrayList<Integer> manavadi = new ArrayList<>(7);
+    static int id = 1133443;
+
+    public Tickets() {
+        for (int i = 0; i < 7; i++) {
+            chennai.add(20);
+            howrah.add(20);
+            mathali.add(20);
+            manavadi.add(20);
+        }
+    }
+
+    public void printOption(String username, User user) {
+        boolean istrue = true;
+        while (istrue) {
+            Scanner reader = new Scanner(System.in);
+            try {
+                System.out.println("Book Tickets..click 1");
+                System.out.println("Print Tickets..click 2");
+                System.out.println("Cancel Tickets..click 3");
+                System.out.println("Logout....click 4");
+                int choice = reader.nextInt();
+                switch (choice) {
+                case 1:
+                    System.out.println("==================================================================");
+                    System.out.println(
+                            "Chennai-Mumbai Hyderabad-Bangalore Coimbatore-Cochin Delhi-Kolkata only this station available");
+                    System.out.println("Enter the Arrival Station");
+                    String arrival = reader.next();
+                    System.out.println("Enter the Destination Station");
+                    String destination = reader.next();
+                    boolean value = true;
+                    int day = 0;
+                    String Day = "";
+                    while (value) {
+                        System.out
+                                .println("You can Book Tickets for Next Week only ==== So Enter like this(eg:Monday)");
+                        System.out.println("Enter the Day");
+                        Day = reader.next();
+                        Day = Day.toLowerCase();
+                        switch (Day) {
+                        case "monday":
+                            day = 0;
+                            value = false;
+                            break;
+                        case "tuesday":
+                            day = 1;
+                            value = false;
+                            break;
+                        case "wednesday":
+                            day = 2;
+                            value = false;
+                            break;
+                        case "thursday":
+                            day = 3;
+                            value = false;
+                            break;
+                        case "friday":
+                            day = 4;
+                            value = false;
+                            break;
+                        case "saturday":
+                            day = 5;
+                            value = false;
+                            break;
+                        case "sunday":
+                            day = 6;
+                            value = false;
+                            break;
+                        default:
+                            day = 7;
+                            System.out.println("Please Enter valid input");
+                            break;
+                        }
+                    }
+                    System.out.println("Enter How Many Tickets You want");
+                    int tickets = reader.nextInt();
+                    reservation(arrival, destination, day, username, tickets, Day, user);
+                    break;
+                case 2:
+                    System.out.println("==================================================================");
+                    System.out.println("Your Tickets");
+                    System.out.println("UserName: " + username);
+                    System.out.println("Email-Id: " + user.getEmail());
+                    System.out.println("Phone Number: " + user.getPhoneNumber());
+                    System.out.println("==========");
+                    user.displayTickets();
+                    break;
+                case 3:
+                    System.out.println("==================================================================");
+                    System.out.println("Enter The Ticket Id Provide to you");
+                    String id = reader.next();
+                    user.deleteTickets(id);
+                    break;
+                case 4:
+                    System.out.println("Logout.....");
+                    System.out.println("==================================================================");
+                    istrue = false;
+
+                    break;
+                }
+            } catch (InputMismatchException i) {
+                System.out.println("Not a valid input");
+            } catch (NullPointerException n) {
+                System.out.println("Not a valid input");
+            }
+
+        }
+
+    }
+
+    public void reservation(String arrival, String destination, int day, String username, int tickets, String Day,
+            User user) {
+
+        if (checkArrivalAndDestination(arrival, destination)) {
+            int temp = checkAvailability(arrival, day);
+            if (tickets > 5 || temp <= 0 || (temp - tickets) < 0 || tickets <= 0) {
+                System.out.println("Sorry...:( Available Tickets" + temp);
+            } else {
+                getMembers(arrival, destination, tickets, day, Day, user);
+                System.out.println("Your Ticket Booking Sucess");
+            }
+        } else {
+            System.out.println("Sorry..Invalid Station");
+        }
+    }
+
+    public boolean checkArrivalAndDestination(String arrival, String destination) {
+        if ((arrival.equals("Chennai")) && (destination.equals("Mumbai"))
+                || (arrival.equals("Delhi")) && (destination.equals("Kolkata"))
+                || (arrival.equals("Hyderabad")) && (destination.equals("Bangalore"))
+                || (arrival.equals("Coimbatore")) && (destination.equals("Cochin"))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public int checkAvailability(String arrival, int day) {
+        switch (arrival) {
+        case "Chennai":
+            return chennai.get(day);
+        case "Delhi":
+            return howrah.get(day);
+        case "Coimbatore":
+            return manavadi.get(day);
+        case "Hyderabad":
+            return mathali.get(day);
+        }
+        return 0;
+    }
+
+    public void getMembers(String arrival, String destination, int tickets, int day, String Day, User user) {
+        Scanner reader = new Scanner(System.in);
+        LinkedList<String> members = new LinkedList<>();
+        String primaryid = String.valueOf(id);
+        if (arrival.equals("Chennai")) {
+            int temp = chennai.get(day);
+            members.add(primaryid);
+            members.add(arrival);
+            members.add(destination);
+            members.add("ChennaiExpress");
+            members.add(Day.toUpperCase());
+            members.add(String.valueOf(day));
+            System.out.println("Enter Traveller Names");
+            for (int i = 0; i < tickets; i++) {
+                members.add(reader.next());
+                temp--;
+            }
+            chennai.set(day, temp);
+            System.out.println("Note this id : " + id);
+        } else if (arrival.equals("Delhi")) {
+            int temp = howrah.get(day);
+            members.add(primaryid);
+            members.add(arrival);
+            members.add(destination);
+            members.add("Howrah Express");
+            members.add(Day.toUpperCase());
+            members.add(String.valueOf(day));
+            System.out.println("Enter Traveller Names");
+            for (int i = 0; i < tickets; i++) {
+                members.add(reader.next());
+                temp--;
+            }
+            howrah.set(day, temp);
+            System.out.println("Note this id : " + id);
+        } else if (arrival.equals("Hyderabad")) {
+            int temp = mathali.get(day);
+            members.add(primaryid);
+            members.add(arrival);
+            members.add(destination);
+            members.add("Mathali Express");
+            members.add(Day.toUpperCase());
+            members.add(String.valueOf(day));
+            System.out.println("Enter Traveller Names");
+            for (int i = 0; i < tickets; i++) {
+                members.add(reader.next());
+                temp--;
+            }
+            mathali.set(day, temp);
+            System.out.println("Note this id : " + id);
+        } else {
+            int temp = manavadi.get(day);
+            members.add(primaryid);
+            members.add(arrival);
+            members.add(destination);
+            members.add("Mathali Express");
+            members.add(Day.toUpperCase());
+            members.add(String.valueOf(day));
+            System.out.println("Enter Traveller Names");
+            for (int i = 0; i < tickets; i++) {
+                members.add(reader.next());
+                temp--;
+            }
+            manavadi.set(day, temp);
+            System.out.println("Note this id : " + id);
+        }
+        id++;
+        user.setTickets(members);
+    }
+}
